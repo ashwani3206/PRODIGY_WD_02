@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Stopwatch</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #ea4343;
+  }
+
+  .container {
+    text-align: center;
+  }
+
+  .stopwatch {
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    padding: 20px;
+    width: 350px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .display {
+    font-size: 36px;
+    margin-bottom: 20px;
+    background-color: #f8f9fa;
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .controls button {
+    margin: 0 10px;
+    padding: 12px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+
+  .controls button:hover {
+    background-color: #0056b3;
+    transform: scale(1.1);
+  }
+
+  .controls button:active {
+    transform: scale(0.95);
+  }
+
+  .laps {
+    list-style-type: none;
+    padding: 0;
+    text-align: left;
+    margin-top: 20px;
+    max-height: 200px;
+    overflow-y: auto;
+    width: 100%;
+    border: 1px solid #cccccc;
+    border-radius: 8px;
+    background-color: #ffffff;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .laps li {
+    margin-bottom: 5px;
+    padding: 5px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="stopwatch">
+      <div class="display">
+        <span id="display">00:00:00.000</span>
+      </div>
+      <div class="controls">
+        <button id="startStop" onclick="startStop()">Start</button>
+        <button id="reset" onclick="reset()">Reset</button>
+        <button id="lap" onclick="lap()">Lap</button>
+      </div>
+      <ul class="laps" id="laps"></ul>
+    </div>
+  </div>
+
+  <script>
+    let timer;
+    let startTime;
+    let running = false;
+    let paused = false;
+    let laps = [];
+
+    function startStop() {
+      if (!running && !paused) {
+        startTimer();
+      } else if (running && !paused) {
+        pauseTimer();
+      } else {
+        resumeTimer();
+      }
+    }
+
+    function startTimer() {
+      running = true;
+      startTime = Date.now() - laps.reduce((acc, lap) => acc + lap, 0);
+      timer = setInterval(updateDisplay, 10);
+      document.getElementById('startStop').textContent = 'Pause';
+      document.getElementById('reset').disabled = false;
+      document.getElementById('lap').disabled = false;
+    }
+
+    function pauseTimer() {
+      running = false;
+      paused = true;
+      clearInterval(timer);
+      document.getElementById('startStop').textContent = 'Resume';
+    }
+
+    function resumeTimer() {
+      running = true;
+      paused = false;
+      startTime = Date.now() - laps.reduce((acc, lap) => acc + lap, 0);
+      timer = setInterval(updateDisplay, 10);
+      document.getElementById('startStop').textContent = 'Pause';
+    }
+
+    function reset() {
+      clearInterval(timer);
+      running = false;
+      paused = false;
+      document.getElementById('display').textContent = '00:00:00.000';
+      document.getElementById('startStop').textContent = 'Start';
+      document.getElementById('reset').disabled = true;
+      document.getElementById('lap').disabled = true;
+      document.getElementById('laps').innerHTML = '';
+      laps = [];
+    }
+
+    function lap() {
+      if (running && !paused) {
+        let currentTime = Date.now();
+        let lapTime = currentTime - startTime;
+        laps.push(lapTime);
+        let formattedTime = formatTime(lapTime);
+        let lapItem = document.createElement('li');
+        lapItem.textContent = `Lap ${laps.length}: ${formattedTime}`;
+        document.getElementById('laps').appendChild(lapItem);
+      }
+    }
+
+    function updateDisplay() {
+      let currentTime = Date.now();
+      let elapsedTime = currentTime - startTime;
+      let formattedTime = formatTime(elapsedTime);
+      document.getElementById('display').textContent = formattedTime;
+    }
+
+    function formatTime(milliseconds) {
+      let date = new Date(milliseconds);
+      let hours = date.getUTCHours().toString().padStart(2, '0');
+      let minutes = date.getUTCMinutes().toString().padStart(2, '0');
+      let seconds = date.getUTCSeconds().toString().padStart(2, '0');
+      let millisecondsFormatted = date.getUTCMilliseconds().toString().padStart(3, '0');
+      return `${hours}:${minutes}:${seconds}.${millisecondsFormatted}`;
+    }
+  </script>
+</body>
+</html>
